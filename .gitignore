@@ -7,3 +7,4 @@ models/
 .env
 *.egg-info/
 data/cache/
+*.bundle
