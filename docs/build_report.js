@@ -89,7 +89,7 @@ children.push(
   new Paragraph({ spacing: { after: 400 }, children: [new TextRun({ text: "Ranking entry-level job postings by transparent, repeatable requirement coverage", size: 32, color: INK })] }),
   new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: "Final Project Report — Generative AI", size: 24, color: MUTED })] }),
   new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: "Group members: [add names and UNIs]", size: 24, color: MUTED })] }),
-  new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: "Code: [add GitHub repository URL]", size: 24, color: MUTED })] }),
+  new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: "Code: https://github.com/ml5384-sys/genai_project", size: 24, color: MUTED })] }),
   new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: "November 2026", size: 24, color: MUTED })] }),
   new Paragraph({ children: [new PageBreak()] }),
 );

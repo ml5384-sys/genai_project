@@ -230,7 +230,7 @@ cols.forEach(([h, items], i) => {
   T(s, items.map((t, j) => ({ text: t, options: { bullet: true, breakLine: j < items.length - 1 } })),
     { x, y: 2.2, w: 4.1, h: 2.4, fontSize: 15, color: "E3E8F1", paraSpaceAfter: 8 });
 });
-T(s, "Thank you — questions?   ·   github: [repository URL]", { x: 0.6, y: 4.85, w: 8.8, h: 0.35, fontSize: 13, color: "9AA6BD" });
+T(s, "Thank you — questions?   ·   github.com/ml5384-sys/genai_project", { x: 0.6, y: 4.85, w: 8.8, h: 0.35, fontSize: 13, color: "9AA6BD" });
 s.addNotes("To wrap up: the main limitation is evaluation — our labels measure topic, and the resumes skew experienced — so the most valuable next step is a small human-labelled set of resume–job pairs, which would let us fit the weights instead of setting them. We'd also add document-similarity retrieval in front of JobFit, run the LLM-extracted index, and turn missing requirements into resume suggestions. Thanks — happy to take questions.");
 
 (async () => {
