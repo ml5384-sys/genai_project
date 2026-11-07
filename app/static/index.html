@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JobFit</title>
+<style>
+:root{
+  --bg:#f7f7f5; --panel:#ffffff; --ink:#1d1d1b; --muted:#6b6b66; --line:#e3e2dd;
+  --accent:#2f5d8a; --accent-ink:#ffffff;
+  --ok:#2e7d4f; --ok-bg:#e5f3ea; --mid:#9a6a00; --mid-bg:#fbf1d9; --no:#a33a3a; --no-bg:#f8e4e2;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#161615; --panel:#1f1f1d; --ink:#ecebe6; --muted:#a3a29b; --line:#34332f;
+    --accent:#7fa8d1; --accent-ink:#10161c;
+    --ok:#7cc79a; --ok-bg:#1d3326; --mid:#e3b85c; --mid-bg:#3a2f16; --no:#e58e86; --no-bg:#3a1f1d; }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{padding:28px 16px 8px;max-width:1100px;margin:0 auto}
+header h1{margin:0;font-size:26px;letter-spacing:-.01em}
+header p{margin:4px 0 0;color:var(--muted)}
+main{max-width:1100px;margin:0 auto;padding:8px 16px 60px}
+.tabs{display:flex;gap:4px;margin:16px 0}
+.tabs button{border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:8px 16px;border-radius:8px;cursor:pointer;font:inherit}
+.tabs button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px}
+label{display:block;font-weight:600;font-size:13px;margin:10px 0 4px}
+textarea,input[type=text],select{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--bg);color:var(--ink);font:inherit}
+textarea{min-height:180px;resize:vertical;font-size:13px}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.chk{display:flex;flex-wrap:wrap;gap:10px;font-size:14px}
+.chk label{display:flex;gap:6px;align-items:center;font-weight:400;margin:0}
+.actions{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:8px;padding:10px 18px;font:inherit;font-weight:600;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--line)}
+.btn:disabled{opacity:.5;cursor:wait}
+.status{color:var(--muted);font-size:13px}
+.results{margin-top:18px;display:grid;gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card-top{display:flex;gap:16px;align-items:flex-start}
+.score{flex:0 0 64px;height:64px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:20px;border:3px solid var(--accent);font-variant-numeric:tabular-nums}
+.ttl{font-weight:650;font-size:16px}
+.sub{color:var(--muted);font-size:13px}
+.bars{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:12px 0}
+.bar{font-size:12px;color:var(--muted)}
+.bar i{display:block;height:6px;border-radius:3px;background:var(--line);margin-top:3px;overflow:hidden}
+.bar i b{display:block;height:100%;background:var(--accent)}
+.expl{margin:8px 0 10px;font-size:14px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12px;padding:3px 9px;border-radius:999px;border:1px solid transparent;cursor:default}
+.chip.matched{background:var(--ok-bg);color:var(--ok)}
+.chip.partial{background:var(--mid-bg);color:var(--mid)}
+.chip.missing{background:var(--no-bg);color:var(--no)}
+.chip.pref{border-style:dashed;border-color:currentColor;background:transparent}
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:6px}
+details{margin-top:10px;font-size:13px}
+details table{width:100%;border-collapse:collapse;margin-top:6px}
+details td,details th{border-top:1px solid var(--line);padding:5px 6px;text-align:left;vertical-align:top}
+details th{color:var(--muted);font-weight:600}
+.profile{font-size:13px;color:var(--muted);margin-top:14px}
+a{color:var(--accent)}
+.hidden{display:none}
+@media (max-width:560px){ .card-top{flex-direction:column} .score{width:56px;height:56px;flex-basis:56px} }
+</style>
+</head>
+<body>
+<header>
+  <h1>JobFit</h1>
+  <p>Which entry-level postings should you apply to? Transparent, repeatable requirement-coverage scores.</p>
+</header>
+<main>
+  <div class="tabs" role="tablist">
+    <button class="on" data-tab="rank">Rank postings</button>
+    <button data-tab="match">Score one job</button>
+  </div>
+
+  <section id="tab-rank" class="panel">
+    <label for="resume">Resume</label>
+    <textarea id="resume" placeholder="Paste your resume text here, or upload a file below."></textarea>
+    <div class="actions">
+      <input type="file" id="file" accept=".pdf,.docx,.txt">
+      <button class="btn ghost" id="sample">Load sample resume</button>
+    </div>
+    <div class="row">
+      <div><label>Experience level</label>
+        <div class="chk" id="levels">
+          <label><input type="checkbox" value="Entry level" checked>Entry</label>
+          <label><input type="checkbox" value="Associate" checked>Associate</label>
+          <label><input type="checkbox" value="Internship" checked>Internship</label>
+        </div></div>
+      <div><label>Function</label>
+        <div class="chk" id="funcs">
+          <label><input type="checkbox" value="FIN">Finance</label>
+          <label><input type="checkbox" value="ACCT">Accounting</label>
+          <label><input type="checkbox" value="IT">IT</label>
+          <label><input type="checkbox" value="CNSL">Consulting</label>
+          <label><input type="checkbox" value="ANLS">Analyst</label>
+        </div></div>
+      <div><label for="loc">Location contains</label><input type="text" id="loc" placeholder="e.g. New York"></div>
+      <div><label for="topk">Results</label>
+        <select id="topk"><option>10</option><option>20</option><option>50</option></select></div>
+    </div>
+    <div class="actions"><button class="btn" id="go">Rank jobs</button><span class="status" id="st"></span></div>
+  </section>
+
+  <section id="tab-match" class="panel hidden">
+    <div class="row">
+      <div><label for="m-resume">Resume</label><textarea id="m-resume"></textarea></div>
+      <div><label for="m-jd">Job description</label><textarea id="m-jd"></textarea></div>
+    </div>
+    <label for="m-title">Job title</label><input type="text" id="m-title" placeholder="e.g. Staff Accountant">
+    <div class="actions"><button class="btn" id="m-go">Score match</button><span class="status" id="m-st"></span></div>
+  </section>
+
+  <div class="legend" id="legend" hidden>
+    <span class="chip matched">matched</span><span class="chip partial">partial (related evidence)</span>
+    <span class="chip missing">missing</span><span class="chip matched pref">dashed = preferred</span>
+  </div>
+  <div class="profile" id="profile"></div>
+  <div class="results" id="out"></div>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => {
+  document.querySelectorAll(".tabs button").forEach(x => x.classList.toggle("on", x === b));
+  $("#tab-rank").classList.toggle("hidden", b.dataset.tab !== "rank");
+  $("#tab-match").classList.toggle("hidden", b.dataset.tab !== "match");
+  $("#out").innerHTML = ""; $("#profile").textContent = ""; $("#legend").hidden = true;
+});
+$("#sample").onclick = async () => {
+  const t = await (await fetch("/static/sample_resume.txt")).text();
+  $("#resume").value = t; $("#m-resume").value = t;
+};
+const checked = id => [...document.querySelectorAll(`#${id} input:checked`)].map(i => i.value);
+const SUBS = [["required","Required"],["preferred","Preferred"],["experience","Experience"],["education","Education"],["role","Role alignment"]];
+
+function card(m, rank){
+  const bars = SUBS.filter(([k]) => m.subscores[k] !== null && m.subscores[k] !== undefined)
+    .map(([k,l]) => `<div class="bar">${l} · ${Math.round(m.subscores[k]*100)}<i><b style="width:${m.subscores[k]*100}%"></b></i></div>`).join("");
+  const chips = m.requirements.map(r => `<span class="chip ${r.status} ${r.importance==="preferred"?"pref":""}"
+     title="${esc(r.importance)} · ${esc(r.method)}${r.evidence ? " · evidence: " + esc(r.evidence) : ""}">${esc(r.requirement)}</span>`).join("");
+  const rows = m.requirements.map(r => `<tr><td>${esc(r.requirement)}</td><td>${r.importance}</td><td>${r.status}</td><td>${r.method}</td><td>${esc(r.evidence||"—")}</td></tr>`).join("");
+  const where = [m.company, m.location, m.level].filter(Boolean).map(esc).join(" · ");
+  return `<article class="card"><div class="card-top"><div class="score">${Math.round(m.score)}</div><div style="flex:1">
+    <div class="ttl">${rank ? rank + ". " : ""}${m.url ? `<a href="${esc(m.url)}" target="_blank" rel="noopener">${esc(m.title)}</a>` : esc(m.title)}</div>
+    <div class="sub">${where} ${where ? "·" : ""} ${m.matched} matched · ${m.partial} partial · ${m.missing} missing</div>
+    <div class="bars">${bars}</div>
+    ${m.explanation ? `<div class="expl">${esc(m.explanation)}</div>` : ""}
+    <div class="chips">${chips}</div>
+    <details><summary>Evidence table</summary><table><tr><th>Requirement</th><th>Importance</th><th>Status</th><th>Method</th><th>Resume evidence</th></tr>${rows}</table></details>
+  </div></div></article>`;
+}
+function showProfile(p){
+  $("#profile").innerHTML = `<b>Parsed resume</b> · ${p.skills.length} skills · ${p.years_experience ?? "?"} yrs experience · education: ${esc(p.education_level ?? "unknown")} ${p.education_fields.length ? "(" + esc(p.education_fields.join(", ")) + ")" : ""}`;
+}
+$("#go").onclick = async () => {
+  const st = $("#st"), btn = $("#go"); btn.disabled = true; st.textContent = "Scoring all postings…";
+  try {
+    let res; const f = $("#file").files[0];
+    const common = {top_k: +$("#topk").value, explain_top: 3};
+    const levels = checked("levels"), functions = checked("funcs"), loc = $("#loc").value.trim();
+    if (f && !$("#resume").value.trim()) {
+      const fd = new FormData(); fd.append("file", f);
+      Object.entries(common).forEach(([k,v]) => fd.append(k, v));
+      if (levels.length) fd.append("levels", levels.join(","));
+      if (functions.length) fd.append("functions", functions.join(","));
+      if (loc) fd.append("location_contains", loc);
+      res = await fetch("/rank/upload", {method:"POST", body: fd});
+    } else {
+      res = await fetch("/rank", {method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({...common, resume_text: $("#resume").value, levels: levels.length ? levels : null,
+          functions: functions.length ? functions : null, location_contains: loc || null})});
+    }
+    const d = await res.json();
+    if (!res.ok) throw new Error(typeof d.detail === "string" ? d.detail : JSON.stringify(d.detail));
+    st.textContent = `Scored ${d.total_postings_scored.toLocaleString()} postings in ${Math.round(d.elapsed_ms)} ms.`;
+    showProfile(d.resume); $("#legend").hidden = false;
+    $("#out").innerHTML = d.results.map((m,i) => card(m, i+1)).join("") || "<p>No postings match these filters.</p>";
+  } catch (e) { st.textContent = "Error: " + e.message; }
+  btn.disabled = false;
+};
+$("#m-go").onclick = async () => {
+  const st = $("#m-st"), btn = $("#m-go"); btn.disabled = true; st.textContent = "Scoring…";
+  try {
+    const res = await fetch("/match", {method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({resume_text: $("#m-resume").value, job_description: $("#m-jd").value, job_title: $("#m-title").value})});
+    const d = await res.json();
+    if (!res.ok) throw new Error(typeof d.detail === "string" ? d.detail : JSON.stringify(d.detail));
+    st.textContent = ""; showProfile(d.resume_profile); $("#legend").hidden = false;
+    $("#out").innerHTML = card(d.match, 0);
+  } catch (e) { st.textContent = "Error: " + e.message; }
+  btn.disabled = false;
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+services:
+  jobfit:
+    build: .
+    image: jobfit-api:latest
+    ports:
+      - "8000:8000"
+    environment:
+      # Optional: enables Gemini extraction/explanations. Without a key JobFit runs fully offline
+      # (rule-based extraction + template explanations).
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-gemini-2.5-flash-lite}
+    volumes:
+      - llm-cache:/app/cache
+    restart: unless-stopped
+volumes:
+  llm-cache:

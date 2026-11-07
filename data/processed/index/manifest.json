@@ -1,0 +1,7 @@
+{
+  "n_jobs": 8000,
+  "n_unique_requirements": 110,
+  "embed_model": "sentence-transformers/all-MiniLM-L6-v2",
+  "extractor": "rule",
+  "built_at": "2026-11-07 00:09:54"
+}

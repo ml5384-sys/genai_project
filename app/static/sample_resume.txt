@@ -1,0 +1,25 @@
+Jordan Lee
+New York, NY | jordan.lee@example.com
+
+EDUCATION
+Columbia University — Master of Science in Applied Analytics, expected May 2025
+Bachelor of Science in Accounting and Finance, State University, 2021–2024
+
+EXPERIENCE
+Financial Analyst Intern, Midtown Capital Partners — June 2024 to August 2024
+- Built a three-statement financial model and DCF valuation for two acquisition targets in Excel
+- Prepared monthly variance analysis comparing budget vs. actuals for a $40M cost center
+- Automated weekly KPI reporting with Python (pandas) and SQL, saving the team 5 hours per week
+- Built interactive Tableau dashboards to track portfolio performance for senior management
+
+Accounting Assistant, Campus Business Office — September 2022 to May 2024
+- Prepared journal entries and bank reconciliations; supported the month-end close
+- Processed vendor invoices and maintained accounts payable records in QuickBooks
+- Assisted the internal audit team with documentation of internal controls
+
+SKILLS
+Excel (pivot tables, VLOOKUP), Python, SQL, Tableau, PowerPoint, financial modeling, GAAP
+Strong written and verbal communication; detail-oriented; team player
+
+CERTIFICATIONS
+CFA Level I candidate; SIE exam passed
