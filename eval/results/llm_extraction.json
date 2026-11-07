@@ -1,0 +1,174 @@
+{
+  "model": "gemini-3.5-flash-lite",
+  "n_sample": 200,
+  "n_llm_ok": 200,
+  "rule": {
+    "reqs_per_jd": 9.165,
+    "required_share": 0.6811897837929185,
+    "with_canonical_skill_share": 0.995,
+    "no_requirements_pct": 0.005,
+    "years_found_pct": 0.49,
+    "degree_found_pct": 0.525
+  },
+  "llm": {
+    "reqs_per_jd": 8.07,
+    "required_share": 0.7416620740370741,
+    "with_canonical_skill_share": 0.22183440864690862,
+    "no_requirements_pct": 0.015,
+    "years_found_pct": 0.615,
+    "degree_found_pct": 0.755
+  },
+  "rule_reqs_covered_by_llm": 0.3886756152791115,
+  "llm_reqs_covered_by_rule": 0.4219608648542658,
+  "min_years_agreement": 0.704,
+  "examples": [
+    {
+      "title": "Staff Accountant ($65-70k)",
+      "rule": [
+        "Communication",
+        "Teamwork",
+        "Compliance / regulatory",
+        "Stakeholder management",
+        "General ledger",
+        "Account reconciliation",
+        "Financial statements",
+        "Reporting",
+        "Valuation",
+        "Accounts payable"
+      ],
+      "llm": [
+        "Corporate Accounting experience (required)",
+        "Strong understanding of accounting principles and practices (required)",
+        "Proficiency in Microsoft Excel (required)",
+        "Effective communication and teamwork abilities (required)"
+      ]
+    },
+    {
+      "title": "Staff Accountant",
+      "rule": [
+        "Tax",
+        "Insurance",
+        "Account reconciliation",
+        "Financial statements",
+        "Payroll",
+        "Banking operations",
+        "Sales",
+        "Reporting",
+        "Lending",
+        "Accounts payable"
+      ],
+      "llm": [
+        "Proficiency in QuickBooks (required)",
+        "Understanding of journal entries, debits, and credits (required)",
+        "Strong analytical and problem-solving skills (required)",
+        "Client service and relationship-building skills (required)",
+        "Multitasking abilities (required)"
+      ]
+    },
+    {
+      "title": "Staff Accountant",
+      "rule": [
+        "Investment analysis",
+        "Process improvement",
+        "General ledger",
+        "Payroll",
+        "Documentation",
+        "Account reconciliation",
+        "Financial statements",
+        "Reporting",
+        "Month-end close",
+        "Tax"
+      ],
+      "llm": [
+        "Certified Public Accountant (preferred)",
+        "NetSuite experience (preferred)",
+        "Strong analytical, organizational and project managements abilities (required)",
+        "Initiative-taking energetic approach (required)",
+        "Excellent oral and written communication skills (required)",
+        "Proven history of effective collaboration (required)",
+        "Elevated level of people skills (required)"
+      ]
+    },
+    {
+      "title": "Accounting Specialist",
+      "rule": [
+        "Compliance / regulatory",
+        "Microsoft Office",
+        "Training & mentoring",
+        "Communication",
+        "Attention to detail",
+        "Time management",
+        "Reporting",
+        "General ledger",
+        "Month-end close",
+        "Audit"
+      ],
+      "llm": [
+        "Strong written and verbal communication skills (required)",
+        "Attention to detail and accuracy (required)",
+        "Highly self-motivated (required)",
+        "Ability to assess issues and initiate solutions (required)",
+        "Proficient computer skills (required)",
+        "Microsoft Word (required)",
+        "Microsoft Excel (required)",
+        "Microsoft Outlook (required)",
+        "Enterprise Resource Planning system (preferred)",
+        "DoD clearance (preferred)"
+      ]
+    }
+  ],
+  "ranking_rule": {
+    "nDCG@10": 0.6574378927949749,
+    "nDCG@10_ci": 0.019462186806378727,
+    "P@10": 0.7392491467576793,
+    "P@10_strict": 0.5984641638225255,
+    "MRR": 0.7690864515372646,
+    "n": 586
+  },
+  "ranking_llm": {
+    "nDCG@10": 0.6467705647491329,
+    "nDCG@10_ci": 0.021033218641813557,
+    "P@10": 0.7088737201365188,
+    "P@10_strict": 0.5800341296928327,
+    "MRR": 0.8109049338089691,
+    "n": 586
+  },
+  "explanations": {
+    "n": 12,
+    "faithful_pct": 0.5833333333333334,
+    "examples": [
+      {
+        "title": "Staff Accountant ($65-70k)",
+        "score": 83.3,
+        "llm": "Your resume is an 83.3% match for the Staff Accountant position, showing a strong overall fit for the role. You successfully meet all key required qualifications, highlighted by your proficiency in Microsoft Excel, corporate accounting software like Oracle Financials and Microsoft Dynamics, and a strong understanding of accounting principles demonstrated through system implementations. Additionally, your background reflects the required effective communication and teamwork abilities needed for the job. There are no missing requirements identified in your profile for this posting.",
+        "template": "Strong fit (83/100). Your resume covers 4 of 4 required qualifications, including Corporate Accounting experience, Strong understanding of accounting principles and practices, Proficiency in Microsoft Excel and Effective communication and teamwork abilities. The posting asks for 1+ years of experience; your resume shows ~25 years.",
+        "unsupported_skill_mentions": [
+          "Accounting software"
+        ]
+      },
+      {
+        "title": "Staff Accountant",
+        "score": 79.8,
+        "llm": "Your resume is a strong fit for the Staff Accountant position, achieving an overall score of 79.8. You successfully meet several key requirements, including your proficiency in QuickBooks, client service and relationship-building skills, strong analytical and problem-solving abilities, and an understanding of journal entries, debits, and credits. However, the most important requirement currently missing from your profile is multitasking abilities.",
+        "template": "Strong fit (80/100). Your resume covers 4 of 5 required qualifications, including Proficiency in QuickBooks, Client service and relationship-building skills, Strong analytical and problem-solving skills and Understanding of journal entries, debits, and credits. No supporting evidence found for Multitasking abilities. The posting asks for 2+ years of experience; your resume shows ~31 years.",
+        "unsupported_skill_mentions": []
+      },
+      {
+        "title": "Staff Accountant",
+        "score": 66.6,
+        "llm": "Your resume achieves an overall match score of 66.6% for the Staff Accountant position. You strongly match the requirement for analytical, organizational, and project management abilities, while partially meeting the needs for people skills and a proven history of effective collaboration. However, your profile is missing key requirements such as an initiative-taking energetic approach and excellent oral and written communication skills.",
+        "template": "Good fit (67/100). Your resume covers 1 of 5 required qualifications, including Strong analytical, organizational and project managements abilities. Related but not exact evidence for Elevated level of people skills and Proven history of effective collaboration (e.g. \u201cSkilled in creating strategic plans and in leading high performance teams to exceed pre-se\u201d). No supporting evidence found for Initiative-taking energetic approach and Excellent oral and written communication skills. The posting asks for 3+ years of experience; your resume shows ~15 years.",
+        "unsupported_skill_mentions": [
+          "Project management"
+        ]
+      },
+      {
+        "title": "Accounting Specialist",
+        "score": 45.5,
+        "llm": "Your resume achieves an overall match score of 45.5 for the Accounting Specialist position. You demonstrate a partial match in your ability to assess issues and initiate solutions through your experience structuring and negotiating financial institution documentation. However, the role requires several critical competencies that are currently missing from your profile, including proficient computer skills, Microsoft Word, Excel, and Outlook, as well as strong written and verbal communication. Additionally, you lack evidence of attention to detail, being highly self-motivated, and preferred qualifications like an Enterprise Resource Planning system or DoD clearance.",
+        "template": "Partial fit (46/100). Your resume covers 0 of 8 required qualifications. Related but not exact evidence for Ability to assess issues and initiate solutions (e.g. \u201cRepresent local and national financial institutions in structuring and negotiating appropr\u201d). No supporting evidence found for Proficient computer skills, Strong written and verbal communication skills, Attention to detail and accuracy and Highly self-motivated. The posting asks for 3+ years of experience; your resume shows ~13 years.",
+        "unsupported_skill_mentions": []
+      }
+    ]
+  }
+}

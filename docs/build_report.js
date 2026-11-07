@@ -11,6 +11,7 @@ const {
 const ROOT = path.resolve(__dirname, "..");
 const R = (f) => JSON.parse(fs.readFileSync(path.join(ROOT, "eval/results", f), "utf8"));
 const rank = R("ranking.json"), para = R("paraphrase.json"), cf = R("counterfactual.json"), st = R("stability.json");
+const lb = R("llm_baseline.json"), lx = R("llm_extraction.json");
 const cal = JSON.parse(fs.readFileSync(path.join(ROOT, "eval/calibration.json"), "utf8"));
 const calB = JSON.parse(fs.readFileSync(path.join(ROOT, "eval/calibration_bge.json"), "utf8"));
 const M = rank.methods;
@@ -96,7 +97,7 @@ children.push(
 // Abstract
 children.push(H1("Abstract"),
   P(`Entry-level candidates typically mass-apply with one generic resume and get no feedback on why applications fail. Pasting a resume and a job description into a chatbot helps for one posting at a time, but its scores vary between runs, it does not show what a score is based on, and it cannot rank thousands of postings. **JobFit** is an API with a web demo that answers one question: *given my resume, which jobs should I apply to?* It (1) converts every job description and the resume into a fixed structured schema (LLM extraction with a JSON schema, or a deterministic rule-based fallback), (2) links each stated requirement to the closest resume evidence with exact taxonomy matching plus calibrated sentence-embedding similarity, (3) combines requirement coverage, experience, education and role alignment with an explicit formula into a 0–100 score with sub-scores, and (4) explains the top results using only the structured match output. The pipeline is served by FastAPI in a Docker container and scores a resume against all ${rank.n_jobs.toLocaleString()} LinkedIn postings in our database in ${Math.round(st.latency_ms_p50)} ms (median) on a CPU.`),
-  P(`On ${rank.n_resumes} Kaggle resumes with weak relevance labels, JobFit reaches nDCG@10 = ${f3(M["JobFit (full)"]["nDCG@10"])}, above keyword TF-IDF (${f3(M["TF-IDF (keyword)"]["nDCG@10"])}) and exact skill overlap (${f3(M["Skill Jaccard (exact)"]["nDCG@10"])}) but below whole-document embedding similarity (${f3(M["Embedding doc-cosine"]["nDCG@10"])}); a hybrid of the two reaches ${f3(M["Hybrid: JobFit + doc-cosine (z-avg)"]["nDCG@10"])}. Semantic matching raises recall on paraphrased evidence from ${pct(para.keyword.recall)} (keywords) to ${pct(mini["with descriptor"].combined_recall)} with no false positives on hard negatives; scores are identical across repeated runs and move in the expected direction in ${pct(cf.remove_matched_skill.pct_decreased)} of counterfactual edits. We discuss what the weak labels can and cannot measure, and the limitations of the system.`),
+  P(`On ${rank.n_resumes} Kaggle resumes with weak relevance labels, JobFit reaches nDCG@10 = ${f3(M["JobFit (full)"]["nDCG@10"])}, above keyword TF-IDF (${f3(M["TF-IDF (keyword)"]["nDCG@10"])}) and exact skill overlap (${f3(M["Skill Jaccard (exact)"]["nDCG@10"])}) but below whole-document embedding similarity (${f3(M["Embedding doc-cosine"]["nDCG@10"])}); a hybrid of the two reaches ${f3(M["Hybrid: JobFit + doc-cosine (z-avg)"]["nDCG@10"])}. Semantic matching raises recall on paraphrased evidence from ${pct(para.keyword.recall)} (keywords) to ${pct(mini["with descriptor"].combined_recall)} with no false positives on hard negatives; scores are identical across repeated runs and move in the expected direction in ${pct(cf.remove_matched_skill.pct_decreased)} of counterfactual edits. Against a plain-LLM baseline (Gemini, five runs per pair) the LLM changed its score in ${pct(lb.pct_pairs_score_changed)} of pairs and would need ~${lb.llm_hours_to_rank_8000.toFixed(0)} hours to rank the database under free-tier limits, while agreeing with JobFit’s ordering (Spearman ${lb.spearman_llm_vs_jobfit.toFixed(2)}). We discuss what the weak labels can and cannot measure, and the limitations of the system, including a compressed absolute score scale.`),
 );
 
 // 1 Introduction
@@ -108,7 +109,7 @@ children.push(H1("1. Introduction"),
   B("A requirement-to-evidence matcher that combines exact taxonomy matches with calibrated sentence-embedding similarity, upgrading the word-vector approach from the course (Module 2) to sentence-level embeddings; descriptor-augmented requirement embeddings raise positive/negative separability (AUC) from 0.920 to 0.947."),
   B("A transparent, repeatable scoring formula, implemented both per pair (with evidence) and vectorised over the whole job database for ranking at scale, with a test that guarantees both agree."),
   B("A FastAPI service (`/match`, `/rank`, `/rank/upload`, …) extending the Module 3 service, a web demo, and a Docker image that runs fully offline."),
-  B("An evaluation with baselines, ablations, a paraphrase benchmark, counterfactual behaviour tests and stability/latency measurements, plus a script for a measured comparison with the plain-LLM approach."),
+  B("An evaluation with baselines, ablations, a paraphrase benchmark, counterfactual behaviour tests, stability/latency measurements, a measured comparison with the plain-LLM approach, and an LLM-vs-rule extraction study."),
 );
 
 // 2 Data
@@ -134,7 +135,7 @@ children.push(H1("3. System design"),
     ["Resume profile", "skills[] (canonical) · evidence[] (bullets / sentences) · years_experience · education_level · education_fields[]"],
   ], [1900, 7460]),
   CAP("Table 1. Extraction schema (app/schemas.py)."),
-  P("**LLM extractor.** The LLM (Gemini, called through its OpenAI-compatible endpoint so any OpenAI-compatible model can be substituted) receives the posting and an instruction to list only qualifications — not duties or benefits — with importance *required* unless the posting marks it preferred, and to put years and degrees in their own fields. Output is constrained by `response_format: json_schema`, temperature is 0, and every (model, prompt) pair is cached in SQLite, so each JD is extracted exactly once. Free-text skill names are canonicalised onto the taxonomy so exact matching still applies. Any failure falls back to the rule-based extractor."),
+  P("**LLM extractor.** The LLM (Gemini 3.5 Flash-Lite through the native Gemini API; any OpenAI-compatible model can be substituted) receives the posting and an instruction to list only qualifications — not duties or benefits — with importance *required* unless the posting marks it preferred, and to put years and degrees in their own fields. Output is constrained by a response JSON schema, temperature is 0, and every (model, prompt) pair is cached in SQLite, so each JD is extracted exactly once. Free-text skill names are canonicalised onto the taxonomy so exact matching still applies. Any failure falls back to the rule-based extractor."),
   P("**Rule-based extractor.** A 115-skill taxonomy over finance, accounting, banking, IT, data, consulting and soft skills (each with aliases, e.g. *SQL* ← postgresql, t-sql) is matched on word boundaries. Each JD segment is labelled by section — requirement, preferred, duty, benefit, other — from heading cues (“Requirements”, “Preferred qualifications”, “What you’ll do”, “Benefits”) and inline cues (“… is a plus”). Skills in a requirement list are required; skills only in duties are preferred when an explicit requirement list exists; if that would leave no required skill, duty skills are promoted. Minimum years come from patterns such as “3+ years of … experience”; resume years are the union of employment date ranges with overlaps merged. Degrees and fields are parsed with regular expressions. On the 8,000 postings the extractor finds on average about 9 requirements; 129 postings (1.6%) yield none and receive the prior coverage."),
   H2("3.2 Semantic matching"),
   P("For each requirement we look for the strongest resume evidence. Resume evidence units are bullets/sentences (at least 3 words) plus the canonical skills found in the resume. An **exact** taxonomy hit gives strength 1. Otherwise we take the maximum cosine similarity between the requirement and any evidence unit, using `all-MiniLM-L6-v2` sentence embeddings run on ONNX Runtime (no GPU or PyTorch needed), and map it through a linear ramp:"),
@@ -222,25 +223,47 @@ children.push(H1("4. Evaluation"),
   P(`Ranking the same resume three times produced **identical rankings and scores for ${pct(st.identical_rankings_pct)} of ${st.n_resumes} resumes** — by construction, since extraction is deterministic (rule-based, or LLM at temperature 0 with caching) and the formula has no randomness. A request that scores all ${st.postings_per_request.toLocaleString()} postings takes ${Math.round(st.latency_ms_mean)} ms on average (p50 ${Math.round(st.latency_ms_p50)} ms, p95 ${Math.round(st.latency_ms_p95)} ms) on a 4-core CPU, including parsing and embedding the resume.`),
   H2("4.7 Comparison with the plain-LLM approach"),
   P("`eval/llm_baseline.py` measures the “paste resume + JD into a chatbot” approach on the same pairs: for each of 30 resume–posting pairs (a mix of top, mid and random postings) it asks the LLM for a 0–100 fit score five times at default sampling temperature, and reports the run-to-run standard deviation and range, the share of pairs whose score changed, latency per pair, the extrapolated time to rank all 8,000 postings, and the Spearman correlation with JobFit’s score."),
-  NOTE("**[To complete before submission]** Our Gemini API key was rejected during the final runs, so the numbers for this subsection (and the LLM-extractor variant of the index) are not yet included. Run `GEMINI_API_KEY=… python eval/llm_baseline.py` and `python scripts/build_index.py --extractor llm`, then insert the values from `eval/results/llm_baseline.json` here. Independently of those numbers, two properties hold by construction: JobFit’s score has zero run-to-run variance, and scoring all 8,000 postings costs one request (~150 ms), whereas the plain-LLM approach needs 8,000 LLM calls per resume."),
+  TABLE(["Measure (30 pairs × 5 runs)", "Plain LLM (" + lb.model + ", T = 1)", "JobFit"], [
+    ["Pairs whose score changed between runs", pct(lb.pct_pairs_score_changed), "0%"],
+    ["Mean run-to-run std. dev. / range (points)", `${lb.llm_score_std_mean.toFixed(1)} / ${lb.llm_score_range_mean.toFixed(1)}`, "0 / 0"],
+    ["Time to score one resume against 8,000 postings", `~${lb.llm_hours_to_rank_8000.toFixed(0)} h (${lb.llm_latency_s_per_pair.toFixed(1)} s per call*)`, `${Math.round(lb.jobfit_ms_to_rank_8000)} ms`],
+    ["Rank agreement with JobFit (Spearman)", lb.spearman_llm_vs_jobfit.toFixed(2), "—"],
+  ], [3960, 2900, 2500]),
+  CAP("Table 8. Plain-LLM baseline vs JobFit on the same pairs. *Measured under the Gemini free tier (15 requests/min), so per-call time includes rate-limit waiting; even at 1 s per call, 8,000 calls take over 2 hours."),
+  P(`The plain LLM changed its score in ${pct(lb.pct_pairs_score_changed)} of pairs across five identical requests (mean range ${lb.llm_score_range_mean.toFixed(1)} points, e.g. 35 → 45 for one Financial Analyst posting), whereas JobFit is exactly repeatable. The two rankings agree strongly (Spearman ${lb.spearman_llm_vs_jobfit.toFixed(2)}), which suggests that JobFit captures much of what the LLM judges — at a tiny fraction of the cost and with evidence. The comparison also exposed a weakness: for clearly off-target postings (e.g. a service-technician or meeting-planner role for a finance resume) the LLM answers 0 while JobFit still gives 50–70, because role alignment and generic soft-skill matches keep a floor under the score. **JobFit’s scores are reliable for ordering but their absolute scale is compressed**; calibrating them (e.g. against LLM or human judgements) is future work, and the demo labels results by rank rather than promising an absolute meaning.`),
+  H2("4.8 LLM extraction and explanations"),
+  P(`We ran the Gemini extractor on a stratified sample of ${lx.n_sample} postings (40 per primary function; ${lx.n_llm_ok}/${lx.n_sample} succeeded) and compared it with the rule-based extractor.`),
+  TABLE(["", "Rule-based", "LLM (" + lx.model + ")"], [
+    ["Requirements per posting", lx.rule.reqs_per_jd.toFixed(1), lx.llm.reqs_per_jd.toFixed(1)],
+    ["Share marked required", pct(lx.rule.required_share), pct(lx.llm.required_share)],
+    ["Minimum years found", pct(lx.rule.years_found_pct), pct(lx.llm.years_found_pct)],
+    ["Minimum degree found", pct(lx.rule.degree_found_pct), pct(lx.llm.degree_found_pct)],
+    ["Requirements mapped to a taxonomy skill", pct(lx.rule.with_canonical_skill_share), pct(lx.llm.with_canonical_skill_share)],
+    ["nDCG@10 within the sample (586 resumes)", `${f3(lx.ranking_rule["nDCG@10"])} ± ${f3(lx.ranking_rule["nDCG@10_ci"])}`, `${f3(lx.ranking_llm["nDCG@10"])} ± ${f3(lx.ranking_llm["nDCG@10_ci"])}`],
+    ["MRR within the sample", f3(lx.ranking_rule.MRR), f3(lx.ranking_llm.MRR)],
+  ], [4160, 2600, 2600], { numeric: true }),
+  CAP("Table 9. Rule-based vs LLM extraction on 200 postings."),
+  P(`The two extractors capture quite different things: only ${pct(lx.rule_reqs_covered_by_llm)} of rule-extracted requirements have a close counterpart in the LLM output and ${pct(lx.llm_reqs_covered_by_rule)} vice versa. The rule extractor flags every taxonomy skill mentioned anywhere (including duties such as “insurance” or “lending” in an accountant posting); the LLM lists the stated qualifications as short phrases (“Understanding of journal entries, debits, and credits”, “Proficiency in QuickBooks”) and finds years and degrees far more often (${pct(lx.llm.years_found_pct)} vs ${pct(lx.rule.years_found_pct)}, ${pct(lx.llm.degree_found_pct)} vs ${pct(lx.rule.degree_found_pct)}). On the weak labels the two give statistically indistinguishable ranking quality (nDCG@10 ${f3(lx.ranking_rule["nDCG@10"])} vs ${f3(lx.ranking_llm["nDCG@10"])}, overlapping intervals; the LLM has higher MRR). We read this as: LLM extraction produces requirements that are more faithful to the posting and more useful in explanations, but category-level labels cannot reward that. Extracting all 8,000 postings was not possible within the free-tier quota (~9 h at 15 requests/min), so the shipped index uses the rule-based extractor and \`scripts/build_index.py --extractor llm\` builds the LLM index when a paid key is available.`),
+  P(`**Explanation faithfulness.** For ${lx.explanations.n} LLM explanations we checked automatically whether every taxonomy skill mentioned in the explanation appears in the structured input it was given. ${pct(lx.explanations.faithful_pct)} pass this strict lexical check. In the two flagged cases we inspected, the failure came from the check rather than from invention: one paraphrased evidence (calling Oracle Financials “accounting software”) and one repeated a requirement whose original wording was misspelled in the posting (“project managements”). The other three flagged cases were not saved, so we cannot rule out unsupported content there; a manual audit of a larger sample is needed before relying on LLM explanations, which is why the deterministic template remains the default.`),
 );
 
 // 5 Discussion
 children.push(H1("5. Value added over off-the-shelf LLMs"),
   TABLE(["", "Plain LLM chat", "JobFit"], [
-    ["Scale", "One posting per conversation", `All ${rank.n_jobs.toLocaleString()} postings per request (~0.15 s), with filters`],
-    ["Repeatability", "Score varies between runs", "Identical output for identical input (tested)"],
+    ["Scale", `One posting per call (~${lb.llm_hours_to_rank_8000.toFixed(0)} h for 8,000 on the free tier)`, `All ${rank.n_jobs.toLocaleString()} postings per request (~0.15 s), with filters`],
+    ["Repeatability", `Score changed in ${pct(lb.pct_pairs_score_changed)} of pairs across 5 runs`, "Identical output for identical input (tested)"],
     ["Transparency", "Opaque number + prose", "Per-requirement status, method and quoted resume evidence; explicit formula"],
     ["Faithfulness of explanation", "Can mention anything", "Generated only from the structured match output"],
     ["Cost / availability", "One LLM call per pair", "JD extraction cached once; ranking needs no LLM; fully offline mode"],
     ["Evaluation", "None", "Baselines, ablations, paraphrase, counterfactual and stability tests"],
   ], [1800, 3200, 4360]),
-  CAP("Table 8. What JobFit adds."),
+  CAP("Table 10. What JobFit adds."),
 );
 children.push(H1("6. Limitations and ethical considerations"),
   B("**Weak labels.** Category labels measure topic, not fit; resumes in the Kaggle dataset are mostly experienced, not students. A small human-annotated set of resume–posting pairs (e.g. 3 annotators × 200 pairs, graded 0–3) would be the most valuable next evaluation and would let us fit the weights instead of setting them by hand."),
   B("**Extraction coverage.** The rule-based extractor only knows its 115-skill taxonomy and section heuristics; requirements outside it (e.g. “experience with German credit regulations”) are invisible. The LLM extractor addresses this, at the cost of an API key, and its quality should be audited on a labelled sample of JDs."),
   B("**Ranking vs document similarity.** On topic labels, document embeddings rank slightly better. A two-stage design — document-similarity retrieval of a few hundred candidates, then JobFit scoring — is a straightforward improvement."),
+  B("**Compressed score scale.** Off-target postings still score 50–70 (role alignment and generic soft skills set a floor), while an LLM scores them near 0; scores should be read as a ranking, and calibrating the absolute scale is future work."),
   B("**Experience parsing** relies on date ranges and may miscount gaps, part-time roles or non-standard formats; over-qualification is not penalised."),
   B("**Fairness.** The score uses only skills, experience and education; names, addresses and demographic proxies are ignored by the formula, but evidence text and embeddings can still carry bias (e.g. wording style). The score should help candidates prioritise, not be used by employers to screen people."),
   B("**Privacy.** Uploaded resumes are processed in memory and not stored; with the LLM enabled, resume text is sent to the LLM provider, which users should be told about."),
@@ -257,11 +280,12 @@ children.push(H1("Appendix A. Reproducing the results"),
     ["Build index", "python scripts/build_index.py [--extractor llm]"],
     ["Calibrate", "python scripts/calibrate.py"],
     ["Evaluate", "python eval/evaluate.py && python eval/make_figures.py"],
-    ["Plain-LLM baseline", "GEMINI_API_KEY=… python eval/llm_baseline.py"],
+    ["Plain-LLM baseline", "GEMINI_API_KEY=… LLM_RPM=14 python eval/llm_baseline.py"],
+    ["LLM extraction study", "GEMINI_API_KEY=… LLM_RPM=14 python eval/llm_extraction.py"],
     ["Tests", "pytest -q"],
   ], [2200, 7160]),
-  CAP("Table 9. Commands (see README.md)."),
-  P("**Data sources.** Kaggle Resume Dataset (snehaanbhawal/resume-dataset); Kaggle LinkedIn Job Postings 2023–2024 (arshkon/linkedin-job-postings). **Models.** sentence-transformers/all-MiniLM-L6-v2 (ONNX, via fastembed); optional Gemini 2.5 Flash-Lite through the OpenAI-compatible endpoint."),
+  CAP("Table 11. Commands (see README.md)."),
+  P("**Data sources.** Kaggle Resume Dataset (snehaanbhawal/resume-dataset); Kaggle LinkedIn Job Postings 2023–2024 (arshkon/linkedin-job-postings). **Models.** sentence-transformers/all-MiniLM-L6-v2 (ONNX, via fastembed); optional Gemini 3.5 Flash-Lite through the OpenAI-compatible endpoint."),
 );
 
 // ------------------------------------------------------------------ document

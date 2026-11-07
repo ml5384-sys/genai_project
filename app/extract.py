@@ -141,6 +141,20 @@ Resume:
 \"\"\"{text}\"\"\""""
 
 
+def _tight_canonical(text: str, category: str) -> str | None:
+    """Map an LLM requirement phrase onto the taxonomy only when the mapping is unambiguous.
+
+    Long phrases ("Ability to work collaboratively with loan processors") would otherwise be
+    collapsed onto a broad skill and earn full exact-match credit; they are matched semantically.
+    """
+    if len(text.split()) > 4:
+        return None
+    c = canonicalize(text)
+    if c and category == "certification" and group_of(c) != _CERT_GROUP:
+        return None
+    return c
+
+
 class LLMExtractor:
     name = "llm"
 
@@ -165,7 +179,7 @@ class LLMExtractor:
             if cat not in ("skill", "tool", "certification", "domain", "other"):
                 cat = "other"
             imp = "preferred" if r.get("importance") == "preferred" else "required"
-            reqs.append(Requirement(text=t, category=cat, importance=imp, skill=canonicalize(t)))
+            reqs.append(Requirement(text=t, category=cat, importance=imp, skill=_tight_canonical(t, cat)))
         lvl = out.get("education_level")
         lvl = lvl if lvl in EDU_LEVELS else None
         yrs = out.get("min_years_experience")

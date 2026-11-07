@@ -1,0 +1,524 @@
+{
+  "model": "gemini-3.5-flash-lite",
+  "temperature": 1.0,
+  "n_pairs": 30,
+  "runs_per_pair": 5,
+  "llm_score_std_mean": 3.628821641498218,
+  "llm_score_range_mean": 8.5,
+  "pct_pairs_score_changed": 0.6666666666666666,
+  "jobfit_score_std": 0.0,
+  "spearman_llm_vs_jobfit": 0.8309232480533927,
+  "llm_latency_s_per_pair": 5.019667324453336,
+  "llm_hours_to_rank_8000": 11.15481627656297,
+  "jobfit_ms_to_rank_8000": 178.3831000000191,
+  "pairs": [
+    {
+      "resume_id": "26767199",
+      "category": "FINANCE",
+      "job_id": "3898170604",
+      "title": "Accounts Payable Specialist",
+      "jobfit": 81.9,
+      "llm_scores": [
+        45,
+        45,
+        45,
+        45,
+        40
+      ],
+      "llm_mean": 44.0,
+      "llm_std": 2.0,
+      "latency_s": 3.6762738263999837
+    },
+    {
+      "resume_id": "29406313",
+      "category": "BANKING",
+      "job_id": "3894279392",
+      "title": "Postdoctoral Research Associate, Department of Surgery",
+      "jobfit": 33.7,
+      "llm_scores": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "llm_mean": 0.0,
+      "llm_std": 0.0,
+      "latency_s": 5.97342841159998
+    },
+    {
+      "resume_id": "39308779",
+      "category": "CONSULTANT",
+      "job_id": "3895276081",
+      "title": "Financial Analyst - Reporting and Analysis",
+      "jobfit": 73.2,
+      "llm_scores": [
+        35,
+        30,
+        35,
+        40,
+        45
+      ],
+      "llm_mean": 37.0,
+      "llm_std": 5.0990195135927845,
+      "latency_s": 3.9992320447999647
+    },
+    {
+      "resume_id": "30813919",
+      "category": "ACCOUNTANT",
+      "job_id": "3901347369",
+      "title": "Auditor",
+      "jobfit": 76.0,
+      "llm_scores": [
+        0,
+        0,
+        0,
+        15,
+        0
+      ],
+      "llm_mean": 3.0,
+      "llm_std": 6.0,
+      "latency_s": 5.259056884400001
+    },
+    {
+      "resume_id": "22615491",
+      "category": "BANKING",
+      "job_id": "3905334403",
+      "title": "General Accountant",
+      "jobfit": 48.6,
+      "llm_scores": [
+        10,
+        15,
+        15,
+        15,
+        10
+      ],
+      "llm_mean": 13.0,
+      "llm_std": 2.449489742783178,
+      "latency_s": 4.1328031908000185
+    },
+    {
+      "resume_id": "35325329",
+      "category": "INFORMATION-TECHNOLOGY",
+      "job_id": "3884435157",
+      "title": "Client Services Associate",
+      "jobfit": 69.9,
+      "llm_scores": [
+        5,
+        15,
+        15,
+        5,
+        15
+      ],
+      "llm_mean": 11.0,
+      "llm_std": 4.898979485566356,
+      "latency_s": 5.3221280980000305
+    },
+    {
+      "resume_id": "27536013",
+      "category": "INFORMATION-TECHNOLOGY",
+      "job_id": "3884824105",
+      "title": "Service Technician (Denver Metro Area)",
+      "jobfit": 69.0,
+      "llm_scores": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "llm_mean": 0.0,
+      "llm_std": 0.0,
+      "latency_s": 4.301099160600029
+    },
+    {
+      "resume_id": "33286293",
+      "category": "BANKING",
+      "job_id": "3905260028",
+      "title": "UCC Legal Assistant",
+      "jobfit": 51.1,
+      "llm_scores": [
+        0,
+        0,
+        15,
+        0,
+        0
+      ],
+      "llm_mean": 3.0,
+      "llm_std": 6.0,
+      "latency_s": 4.206502477400045
+    },
+    {
+      "resume_id": "27914096",
+      "category": "FINANCE",
+      "job_id": "3889709876",
+      "title": "Staff Accountant",
+      "jobfit": 82.7,
+      "llm_scores": [
+        85,
+        85,
+        75,
+        85,
+        75
+      ],
+      "llm_mean": 81.0,
+      "llm_std": 4.898979485566356,
+      "latency_s": 4.2574884740000245
+    },
+    {
+      "resume_id": "99124477",
+      "category": "BANKING",
+      "job_id": "3894892628",
+      "title": "Meeting Planner- Federal Contractor",
+      "jobfit": 73.0,
+      "llm_scores": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "llm_mean": 0.0,
+      "llm_std": 0.0,
+      "latency_s": 3.9691456301999777
+    },
+    {
+      "resume_id": "24854026",
+      "category": "FINANCE",
+      "job_id": "3904362818",
+      "title": "Financial Analyst",
+      "jobfit": 76.7,
+      "llm_scores": [
+        85,
+        75,
+        75,
+        85,
+        75
+      ],
+      "llm_mean": 79.0,
+      "llm_std": 4.898979485566356,
+      "latency_s": 5.895744268199996
+    },
+    {
+      "resume_id": "28243590",
+      "category": "CONSULTANT",
+      "job_id": "3902830619",
+      "title": "Portfolio Analyst",
+      "jobfit": 77.5,
+      "llm_scores": [
+        40,
+        35,
+        40
+      ],
+      "llm_mean": 38.333333333333336,
+      "llm_std": 2.357022603955158,
+      "latency_s": 4.144623461000014
+    },
+    {
+      "resume_id": "29552167",
+      "category": "BANKING",
+      "job_id": "3894569023",
+      "title": "Developer Support Engineer",
+      "jobfit": 51.6,
+      "llm_scores": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "llm_mean": 0.0,
+      "llm_std": 0.0,
+      "latency_s": 4.289430519799998
+    },
+    {
+      "resume_id": "72876163",
+      "category": "BANKING",
+      "job_id": "3900077574",
+      "title": "Business Development Manager",
+      "jobfit": 88.6,
+      "llm_scores": [
+        25,
+        35,
+        45,
+        45,
+        35
+      ],
+      "llm_mean": 37.0,
+      "llm_std": 7.483314773547883,
+      "latency_s": 5.259853846799979
+    },
+    {
+      "resume_id": "28051330",
+      "category": "BANKING",
+      "job_id": "3900984248",
+      "title": "Service Technician",
+      "jobfit": 76.7,
+      "llm_scores": [
+        35,
+        20,
+        20,
+        40,
+        40
+      ],
+      "llm_mean": 31.0,
+      "llm_std": 9.16515138991168,
+      "latency_s": 5.08358443559996
+    },
+    {
+      "resume_id": "13982572",
+      "category": "BANKING",
+      "job_id": "3905851014",
+      "title": "Compliance Specialist",
+      "jobfit": 88.7,
+      "llm_scores": [
+        75,
+        75,
+        75,
+        75,
+        75
+      ],
+      "llm_mean": 75.0,
+      "llm_std": 0.0,
+      "latency_s": 4.857947813199985
+    },
+    {
+      "resume_id": "17556527",
+      "category": "ACCOUNTANT",
+      "job_id": "3886896956",
+      "title": "Senior Accountant",
+      "jobfit": 82.5,
+      "llm_scores": [
+        75,
+        75,
+        75,
+        75,
+        75
+      ],
+      "llm_mean": 75.0,
+      "llm_std": 0.0,
+      "latency_s": 7.842345116999991
+    },
+    {
+      "resume_id": "12897903",
+      "category": "CONSULTANT",
+      "job_id": "3904720369",
+      "title": "Sheet Metal Installer",
+      "jobfit": 20.8,
+      "llm_scores": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "llm_mean": 0.0,
+      "llm_std": 0.0,
+      "latency_s": 4.267881105999959
+    },
+    {
+      "resume_id": "26530575",
+      "category": "FINANCE",
+      "job_id": "3905396314",
+      "title": "Program Manager",
+      "jobfit": 54.7,
+      "llm_scores": [
+        15,
+        15,
+        15,
+        25,
+        25
+      ],
+      "llm_mean": 19.0,
+      "llm_std": 4.898979485566356,
+      "latency_s": 4.331095036200077
+    },
+    {
+      "resume_id": "34875813",
+      "category": "CONSULTANT",
+      "job_id": "3904367628",
+      "title": "Staff Accountant I",
+      "jobfit": 76.1,
+      "llm_scores": [
+        45,
+        35,
+        40,
+        40,
+        45
+      ],
+      "llm_mean": 41.0,
+      "llm_std": 3.7416573867739413,
+      "latency_s": 5.070176919600044
+    },
+    {
+      "resume_id": "39569771",
+      "category": "BANKING",
+      "job_id": "3903876808",
+      "title": "Commissions Associate",
+      "jobfit": 79.4,
+      "llm_scores": [
+        85,
+        85,
+        85,
+        85,
+        85
+      ],
+      "llm_mean": 85.0,
+      "llm_std": 0.0,
+      "latency_s": 4.241607920200022
+    },
+    {
+      "resume_id": "15821633",
+      "category": "ACCOUNTANT",
+      "job_id": "3905608756",
+      "title": "Online Loan Processor",
+      "jobfit": 57.8,
+      "llm_scores": [
+        15,
+        30,
+        35,
+        35,
+        15
+      ],
+      "llm_mean": 26.0,
+      "llm_std": 9.16515138991168,
+      "latency_s": 7.948276070400061
+    },
+    {
+      "resume_id": "24913648",
+      "category": "INFORMATION-TECHNOLOGY",
+      "job_id": "3905661856",
+      "title": "Network Engineer \u2013 TS/SCI required",
+      "jobfit": 85.2,
+      "llm_scores": [
+        85,
+        85,
+        85,
+        85,
+        85
+      ],
+      "llm_mean": 85.0,
+      "llm_std": 0.0,
+      "latency_s": 4.486990550999963
+    },
+    {
+      "resume_id": "10089434",
+      "category": "INFORMATION-TECHNOLOGY",
+      "job_id": "3885860524",
+      "title": "Cybersecurity Analyst Intern (Hybrid)",
+      "jobfit": 73.9,
+      "llm_scores": [
+        35,
+        45,
+        45,
+        45,
+        45
+      ],
+      "llm_mean": 43.0,
+      "llm_std": 4.0,
+      "latency_s": 5.112789297800009
+    },
+    {
+      "resume_id": "12374933",
+      "category": "CONSULTANT",
+      "job_id": "3904054113",
+      "title": "Director, Technical Program Management - Card Data Tech",
+      "jobfit": 73.1,
+      "llm_scores": [
+        15,
+        35,
+        30,
+        15,
+        15
+      ],
+      "llm_mean": 22.0,
+      "llm_std": 8.717797887081348,
+      "latency_s": 4.306491236800002
+    },
+    {
+      "resume_id": "24889109",
+      "category": "INFORMATION-TECHNOLOGY",
+      "job_id": "3884832580",
+      "title": "Entry-Mid IT Support Specialist",
+      "jobfit": 83.6,
+      "llm_scores": [
+        90,
+        85,
+        85,
+        95,
+        90
+      ],
+      "llm_mean": 89.0,
+      "llm_std": 3.7416573867739413,
+      "latency_s": 7.651536786999986
+    },
+    {
+      "resume_id": "29494962",
+      "category": "FINANCE",
+      "job_id": "3901468983",
+      "title": "Staff Accountant",
+      "jobfit": 80.3,
+      "llm_scores": [
+        45,
+        45,
+        45,
+        30,
+        45
+      ],
+      "llm_mean": 42.0,
+      "llm_std": 6.0,
+      "latency_s": 3.646115827999938
+    },
+    {
+      "resume_id": "19201175",
+      "category": "INFORMATION-TECHNOLOGY",
+      "job_id": "3906229536",
+      "title": "Financial Service Representative -Operations",
+      "jobfit": 53.1,
+      "llm_scores": [
+        0,
+        15,
+        0,
+        0,
+        0
+      ],
+      "llm_mean": 3.0,
+      "llm_std": 6.0,
+      "latency_s": 4.235379354400038
+    },
+    {
+      "resume_id": "81677620",
+      "category": "FINANCE",
+      "job_id": "3884933409",
+      "title": "Electrical Engineer Offshore Wind",
+      "jobfit": 50.5,
+      "llm_scores": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "llm_mean": 0.0,
+      "llm_std": 0.0,
+      "latency_s": 8.32552883379999
+    },
+    {
+      "resume_id": "17276884",
+      "category": "BANKING",
+      "job_id": "3904944264",
+      "title": "Entry Level Account Manager ",
+      "jobfit": 73.0,
+      "llm_scores": [
+        45,
+        30,
+        45,
+        30,
+        45
+      ],
+      "llm_mean": 39.0,
+      "llm_std": 7.3484692283495345,
+      "latency_s": 4.495463132600025
+    }
+  ]
+}

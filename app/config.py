@@ -19,12 +19,15 @@ class Settings:
     model_dir: Path = Path(_env("JOBFIT_MODEL_DIR", str(ROOT / "models")))
     embed_model: str = _env("JOBFIT_EMBED_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
 
-    # LLM (Gemini through its OpenAI-compatible endpoint by default; any OpenAI-compatible
-    # server such as OpenAI, vLLM or Ollama works by changing the base URL / model).
-    llm_base_url: str = _env("LLM_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai")
-    llm_model: str = _env("LLM_MODEL", "gemini-2.5-flash-lite")
+    # LLM (Gemini by default).
+    # LLM_PROVIDER=gemini uses the native Gemini REST API (x-goog-api-key); LLM_PROVIDER=openai uses any
+    # OpenAI-compatible /chat/completions server (OpenAI, vLLM, Ollama, Gemini's /openai endpoint).
+    llm_provider: str = _env("LLM_PROVIDER", "gemini")
+    llm_base_url: str = _env("LLM_BASE_URL", "https://generativelanguage.googleapis.com/v1beta")
+    llm_model: str = _env("LLM_MODEL", "gemini-3.5-flash-lite")
     llm_api_key: str = _env("LLM_API_KEY", _env("GEMINI_API_KEY", ""))
     llm_timeout: float = float(_env("LLM_TIMEOUT", "60"))
+    llm_rpm: float = float(_env("LLM_RPM", "0"))  # client-side rate limit; 0 = none (free tier: set 14)
     # "auto": use the LLM when a key is configured, else the rule-based path.
     extractor: str = _env("JOBFIT_EXTRACTOR", "auto")      # auto | llm | rule
     explainer: str = _env("JOBFIT_EXPLAINER", "auto")      # auto | llm | template

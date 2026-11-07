@@ -114,19 +114,31 @@ python scripts/calibrate.py                   # similarity thresholds -> eval/ca
 ```bash
 python eval/evaluate.py                       # ranking, paraphrase, counterfactual, stability -> eval/results/
 python eval/make_figures.py                   # docs/figures/*.png
-GEMINI_API_KEY=... python eval/llm_baseline.py   # plain-LLM baseline (variance, latency, agreement)
+GEMINI_API_KEY=... LLM_RPM=14 python eval/llm_baseline.py     # plain-LLM baseline (variance, latency, agreement)
+GEMINI_API_KEY=... LLM_RPM=14 python eval/llm_extraction.py   # LLM vs rule extraction + explanation faithfulness
 pytest -q                                     # 26 unit + integration tests
 ```
 
-See `docs/JobFit_Final_Report` for results and discussion.
+Headline results (details in `docs/JobFit_Final_Report.pdf`):
+
+| | |
+|---|---|
+| Ranking, nDCG@10 (586 resumes × 8,000 postings, weak labels) | JobFit 0.701 · TF-IDF 0.695 · exact skill overlap 0.673 · doc-embedding 0.742 · hybrid 0.739 |
+| Paraphrased-evidence recall (42 cases) | keywords 38% → JobFit 69%, 0% false positives |
+| Counterfactual edits moving the score the right way | 98/98 removals, 17/17 additions |
+| Repeatability | 100% identical rankings; plain Gemini changed its score in 67% of pairs over 5 runs |
+| Latency, all 8,000 postings | 146 ms median (CPU) vs ~11 h for one LLM call per posting (free tier) |
+| Agreement with plain-LLM ordering | Spearman 0.83 (but JobFit's absolute scale is compressed) |
 
 ## Configuration (environment variables)
 
 | Variable | Default | Meaning |
 |---|---|---|
 | `GEMINI_API_KEY` / `LLM_API_KEY` | – | enables LLM extraction & explanations |
-| `LLM_BASE_URL` | Gemini OpenAI-compatible endpoint | any OpenAI-compatible server (OpenAI, vLLM, Ollama) |
-| `LLM_MODEL` | `gemini-2.5-flash-lite` | model name |
+| `LLM_PROVIDER` | `gemini` | `gemini` = native Gemini API (`x-goog-api-key`, works with `AIza…` and `AQ.…` keys); `openai` = any OpenAI-compatible server |
+| `LLM_BASE_URL` | `https://generativelanguage.googleapis.com/v1beta` | e.g. `https://api.openai.com/v1` with `LLM_PROVIDER=openai` |
+| `LLM_RPM` | `0` (no limit) | client-side requests/minute; set `14` on the Gemini free tier |
+| `LLM_MODEL` | `gemini-3.5-flash-lite` | model name |
 | `JOBFIT_EXTRACTOR` / `JOBFIT_EXPLAINER` | `auto` | `llm`, `rule`/`template`, or `auto` (LLM if key present) |
 | `JOBFIT_EMBED_MODEL` | `sentence-transformers/all-MiniLM-L6-v2` | any fastembed model |
 | `JOBFIT_SIM_LO` / `JOBFIT_SIM_HI` | 0.32 / 0.52 | calibrated semantic ramp |

@@ -8,6 +8,7 @@ const ROOT = path.resolve(__dirname, "..");
 const R = (f) => JSON.parse(fs.readFileSync(path.join(ROOT, "eval/results", f), "utf8"));
 const rank = R("ranking.json"), para = R("paraphrase.json"), cf = R("counterfactual.json"), st = R("stability.json");
 const M = rank.methods;
+const lb = R("llm_baseline.json");
 const mini = para.models["sentence-transformers/all-MiniLM-L6-v2"]["with descriptor"];
 const f3 = (x) => x.toFixed(3), pct = (x) => `${Math.round(x * 100)}%`;
 const FIG = (f) => path.join(ROOT, "docs/figures", f);
@@ -205,8 +206,8 @@ s.addNotes("Because the category labels can't test requirement matching, we buil
 // 9 ── Value added
 s = pres.addSlide({ masterName: "CONTENT", sectionTitle: "Results" });
 s.addText("Value added over a plain LLM chat", { placeholder: "title" });
-const rows = [["Scale", "One posting per chat", "All 8,000 per request, filterable"],
-  ["Repeatability", "Score varies by run", "Identical output (tested)"],
+const rows = [["Scale", `~${lb.llm_hours_to_rank_8000.toFixed(0)} h for 8,000 postings`, `${Math.round(lb.jobfit_ms_to_rank_8000)} ms for 8,000, filterable`],
+  ["Repeatability", `Score changed in ${pct(lb.pct_pairs_score_changed)} of pairs (5 runs)`, "Identical output (tested)"],
   ["Transparency", "Opaque number", "Per-requirement evidence + formula"],
   ["Explanations", "Can say anything", "Only from the match output"],
   ["Cost", "1 LLM call per pair", "JDs extracted once; ranking needs no LLM"]];
@@ -214,15 +215,15 @@ const hdr = (t, fill, color) => ({ text: t, options: { bold: true, fill: { color
 s.addTable([[hdr("", HEX.lt1, HEX.dk1), hdr("Plain LLM chat", HEX.lt2, HEX.dk2), hdr("JobFit", HEX.accent1, HEX.lt1)],
   ...rows.map(([a, b, c]) => [{ text: a, options: { bold: true, color: HEX.dk2 } }, { text: b, options: { color: HEX.accent6 } }, { text: c, options: { color: HEX.dk1 } }])],
   { x: 0.5, y: 1.25, w: 9, colW: [1.9, 3.2, 3.9], fontSize: 14, fontFace: "Calibri", border: { type: "solid", pt: 0.75, color: "D5D9E0" }, rowH: 0.52, valign: "middle" });
-T(s, "Measured plain-LLM variance & latency: eval/llm_baseline.py  [insert results once the Gemini key is active]", { x: 0.5, y: 4.75, w: 9, h: 0.35, fontSize: 12, color: HEX.accent4, italic: true });
-s.addNotes("This is our value-add over off-the-shelf functionality. Scale: one request ranks everything. Repeatability: identical output for identical input. Transparency: every score decomposes into requirements and quoted evidence. Explanations are generated only from the structured match, so they can't invent qualifications. And cost: we call the LLM once per job description, not once per resume–job pair. [If you ran llm_baseline.py, add: the plain LLM's score varied by X points across five runs.]");
+T(s, `Measured with ${lb.model} on 30 resume–posting pairs × 5 runs · rank agreement with JobFit: Spearman ${lb.spearman_llm_vs_jobfit.toFixed(2)} · caveat: JobFit's absolute scale is compressed`, { x: 0.5, y: 4.75, w: 9, h: 0.35, fontSize: 12, color: HEX.accent6, italic: true });
+s.addNotes("This is our value-add over off-the-shelf functionality. Scale: one request ranks everything. Repeatability: identical output for identical input. Transparency: every score decomposes into requirements and quoted evidence. Explanations are generated only from the structured match, so they can't invent qualifications. And cost: we call the LLM once per job description, not once per resume–job pair. We measured this: asking Gemini the same question five times changed its score in two thirds of pairs, by 8.5 points on average, and ranking all 8,000 postings would take about 11 hours on the free tier. Encouragingly, the LLM's ordering agrees with ours — Spearman 0.83. One honest caveat: for clearly off-target jobs the LLM says 0 while JobFit still gives 50 to 70, so our scores are best read as a ranking.");
 
 // 10 ── Limitations & next steps
 pres.addSection({ title: "Close" });
 s = pres.addSlide({ masterName: "DARK", sectionTitle: "Close" });
 T(s, "Limitations & next steps", { x: 0.6, y: 0.55, w: 8.8, h: 0.8, fontSize: 36, bold: true, color: C.background1, fontFace: "Cambria", valign: "middle" });
-const cols = [["Limitations", ["Weak labels measure topic, not fit", "Kaggle resumes are mostly experienced", "Rule extractor limited to its taxonomy", "Weights set by hand, not learned"]],
-  ["Next steps", ["Human-labelled fit set → fit the weights", "Two-stage: doc-similarity retrieval + JobFit", "LLM-extracted index + measured LLM baseline", "Resume suggestions from missing requirements"]]];
+const cols = [["Limitations", ["Weak labels measure topic, not fit", "Compressed scale: off-target jobs still ~50–70", "Kaggle resumes are mostly experienced", "Weights set by hand, not learned"]],
+  ["Next steps", ["Human-labelled fit set → fit the weights", "Two-stage: doc-similarity retrieval + JobFit", "Full LLM-extracted index (paid quota)", "Resume suggestions from missing requirements"]]];
 cols.forEach(([h, items], i) => {
   const x = 0.6 + i * 4.5;
   T(s, h, { x, y: 1.65, w: 4.1, h: 0.45, fontSize: 20, bold: true, color: HEX.accent2, fontFace: "Cambria" });

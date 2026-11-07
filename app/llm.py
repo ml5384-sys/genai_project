@@ -40,12 +40,43 @@ class _Cache:
             self._db.commit()
 
 
+class _RateLimiter:
+    """Client-side requests-per-minute limiter (Gemini free tier allows 15 RPM per model)."""
+
+    def __init__(self, rpm: float):
+        self.interval = 60.0 / rpm if rpm > 0 else 0.0
+        self._next = 0.0
+        self._lock = threading.Lock()
+
+    def wait(self) -> None:
+        if not self.interval:
+            return
+        with self._lock:
+            now = time.monotonic()
+            t = max(now, self._next)
+            self._next = t + self.interval
+        if t > now:
+            time.sleep(t - now)
+
+
+def _retry_delay(resp: httpx.Response, default: float) -> float:
+    try:
+        for d in resp.json()["error"].get("details", []):
+            if "retryDelay" in d:
+                return float(str(d["retryDelay"]).rstrip("s")) + 1.0
+    except Exception:
+        pass
+    return default
+
+
 class LLMClient:
     def __init__(self, base_url: str | None = None, model: str | None = None, api_key: str | None = None,
                  cache_path: Path | None = None):
         self.base_url = (base_url or settings.llm_base_url).rstrip("/")
         self.model = model or settings.llm_model
         self.api_key = api_key if api_key is not None else settings.llm_api_key
+        self.provider = settings.llm_provider
+        self.limiter = _RateLimiter(settings.llm_rpm)
         self.cache = _Cache(cache_path or settings.cache_path)
         self._http = httpx.Client(timeout=settings.llm_timeout)
 
@@ -54,13 +85,29 @@ class LLMClient:
         return bool(self.api_key)
 
     def chat(self, messages: list[dict], *, temperature: float = 0.0, json_schema: dict | None = None,
-             max_tokens: int = 2048, use_cache: bool = True, retries: int = 4) -> str:
-        body: dict[str, Any] = {"model": self.model, "messages": messages, "temperature": temperature,
-                                "max_tokens": max_tokens}
-        if json_schema is not None:
-            body["response_format"] = {"type": "json_schema",
-                                       "json_schema": {"name": "output", "schema": json_schema, "strict": True}}
-        key = hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest()
+             max_tokens: int = 2048, use_cache: bool = True, retries: int = 6) -> str:
+        if self.provider == "gemini":
+            # native Gemini API (works with both AIza... and AQ.... keys)
+            body: dict[str, Any] = {
+                "contents": [{"role": "model" if m["role"] == "assistant" else "user", "parts": [{"text": m["content"]}]}
+                             for m in messages if m["role"] != "system"],
+                "generationConfig": {"temperature": temperature, "maxOutputTokens": max_tokens},
+            }
+            sys_msgs = [m["content"] for m in messages if m["role"] == "system"]
+            if sys_msgs:
+                body["systemInstruction"] = {"parts": [{"text": "\n".join(sys_msgs)}]}
+            if json_schema is not None:
+                body["generationConfig"].update({"responseMimeType": "application/json", "responseJsonSchema": json_schema})
+            url = f"{self.base_url}/models/{self.model}:generateContent"
+            headers = {"x-goog-api-key": self.api_key}
+        else:
+            body = {"model": self.model, "messages": messages, "temperature": temperature, "max_tokens": max_tokens}
+            if json_schema is not None:
+                body["response_format"] = {"type": "json_schema",
+                                           "json_schema": {"name": "output", "schema": json_schema, "strict": True}}
+            url = f"{self.base_url}/chat/completions"
+            headers = {"Authorization": f"Bearer {self.api_key}"}
+        key = hashlib.sha256(json.dumps({"m": self.model, "b": body}, sort_keys=True).encode()).hexdigest()
         if use_cache:
             hit = self.cache.get(key)
             if hit is not None:
@@ -69,23 +116,32 @@ class LLMClient:
             raise LLMError("No LLM API key configured (set GEMINI_API_KEY or LLM_API_KEY)")
         delay = 2.0
         for attempt in range(retries + 1):
+            self.limiter.wait()
             try:
-                r = self._http.post(f"{self.base_url}/chat/completions", json=body,
-                                    headers={"Authorization": f"Bearer {self.api_key}"})
+                r = self._http.post(url, json=body, headers=headers)
             except httpx.HTTPError as e:
                 err = str(e)
             else:
                 if r.status_code == 200:
-                    content = r.json()["choices"][0]["message"].get("content") or ""
+                    data = r.json()
+                    if self.provider == "gemini":
+                        parts = (data.get("candidates") or [{}])[0].get("content", {}).get("parts", [])
+                        content = "".join(p.get("text", "") for p in parts if not p.get("thought"))
+                    else:
+                        content = data["choices"][0]["message"].get("content") or ""
                     if use_cache:
                         self.cache.put(key, content)
                     return content
                 err = f"HTTP {r.status_code}: {r.text[:300]}"
                 if r.status_code not in (429, 500, 502, 503, 504):
                     raise LLMError(err)
+                if r.status_code == 429 and "PerDay" in r.text:
+                    raise LLMError("daily quota exhausted: " + err)
+                if r.status_code == 429:
+                    delay = max(delay, _retry_delay(r, delay))
             if attempt < retries:
                 time.sleep(delay)
-                delay *= 2
+                delay = min(delay * 2, 60)
         raise LLMError(err)
 
     def json(self, messages: list[dict], schema: dict, **kw) -> dict:

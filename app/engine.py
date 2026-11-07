@@ -32,7 +32,19 @@ def build_index(jobs: list[dict], out_dir: Path, extractor=None, embedder=None, 
     out_dir.mkdir(parents=True, exist_ok=True)
     profiles: list[JDProfile] = []
     t0 = time.time()
-    if workers > 1 and isinstance(extractor, RuleExtractor):
+    if workers > 1 and not isinstance(extractor, RuleExtractor):
+        # LLM extraction is I/O bound: threads, results cached so re-runs are free
+        from concurrent.futures import ThreadPoolExecutor
+
+        def one(j):
+            return extractor.extract_jd(j["description"], j["title"], j["job_id"])
+
+        with ThreadPoolExecutor(workers) as pool:
+            for i, p in enumerate(pool.map(one, jobs)):
+                profiles.append(p)
+                if log_every and (i + 1) % log_every == 0:
+                    log.info("extracted %d/%d (%.0fs)", i + 1, len(jobs), time.time() - t0)
+    elif workers > 1 and isinstance(extractor, RuleExtractor):
         from concurrent.futures import ProcessPoolExecutor
 
         with ProcessPoolExecutor(workers) as pool:
