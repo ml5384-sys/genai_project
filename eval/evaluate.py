@@ -129,6 +129,7 @@ def exp_ranking(E: JobFitEngine, resumes, n: int, rng) -> dict:
         "  - semantic matching (exact only)": {"sim_lo": 2.0, "sim_hi": 3.0},
         "  - role alignment": {"weights": {**W, "role": 0.0}},
         "  - required/preferred weighting": {"importance_weight": {"required": 1.0, "preferred": 1.0}},
+        "  - soft-skill down-weighting": {"soft_skill_factor": 1.0},
         "  - smoothing": {"smoothing_k": 0.0},
         "  - experience & education": {"weights": {**W, "experience": 0.0, "education": 0.0}},
         "Coverage only (required+preferred)": {"weights": {"required": 0.8, "preferred": 0.2, "experience": 0.0,
@@ -172,8 +173,8 @@ def exp_paraphrase(models: list[str]) -> dict:
         row = {}
         for label, R in (("with descriptor", req), ("bare skill name", bare)):
             sp, sn = (R * pos).sum(1), (R * neg).sum(1)
-            st_p = ramp(sp, cal["sim_lo"], cal["sim_hi"])
-            st_n = ramp(sn, cal["sim_lo"], cal["sim_hi"])
+            st_p = config.settings.semantic_max * ramp(sp, cal["sim_lo"], cal["sim_hi"])
+            st_n = config.settings.semantic_max * ramp(sn, cal["sim_lo"], cal["sim_hi"])
             thr = config.settings.partial_threshold
             sem_pos, sem_neg = st_p >= thr, st_n >= thr
             row[label] = {

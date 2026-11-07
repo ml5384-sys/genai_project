@@ -1,0 +1,53 @@
+{
+  "n_cases": 42,
+  "models": {
+    "sentence-transformers/all-MiniLM-L6-v2": {
+      "with descriptor": {
+        "pairwise_accuracy": 1.0,
+        "semantic_recall": 0.6428571428571429,
+        "semantic_fpr": 0.0,
+        "combined_recall": 0.6904761904761905,
+        "combined_fpr": 0.0,
+        "recovered_beyond_keyword": 13,
+        "mean_cos_pos": 0.48222678899765015,
+        "mean_cos_neg": 0.11090341210365295
+      },
+      "bare skill name": {
+        "pairwise_accuracy": 0.9523809523809523,
+        "semantic_recall": 0.5,
+        "semantic_fpr": 0.0,
+        "combined_recall": 0.6666666666666666,
+        "combined_fpr": 0.0,
+        "recovered_beyond_keyword": 12,
+        "mean_cos_pos": 0.3867160677909851,
+        "mean_cos_neg": 0.11051903665065765
+      }
+    },
+    "BAAI/bge-small-en-v1.5": {
+      "with descriptor": {
+        "pairwise_accuracy": 1.0,
+        "semantic_recall": 0.7857142857142857,
+        "semantic_fpr": 0.0,
+        "combined_recall": 0.8571428571428571,
+        "combined_fpr": 0.0,
+        "recovered_beyond_keyword": 20,
+        "mean_cos_pos": 0.7425082325935364,
+        "mean_cos_neg": 0.5237018465995789
+      },
+      "bare skill name": {
+        "pairwise_accuracy": 1.0,
+        "semantic_recall": 0.42857142857142855,
+        "semantic_fpr": 0.0,
+        "combined_recall": 0.6666666666666666,
+        "combined_fpr": 0.0,
+        "recovered_beyond_keyword": 12,
+        "mean_cos_pos": 0.6911104321479797,
+        "mean_cos_neg": 0.5196052193641663
+      }
+    }
+  },
+  "keyword": {
+    "recall": 0.38095238095238093,
+    "false_positive_rate": 0.0
+  }
+}

@@ -124,8 +124,45 @@ def fig_per_category():
     fig.savefig(FIG / "per_category.png", dpi=200)
 
 
+def fig_architecture():
+    from matplotlib.patches import FancyBboxPatch
+
+    fig, ax = plt.subplots(figsize=(10, 4.2))
+    ax.set_xlim(0, 10)
+    ax.set_ylim(0, 4.2)
+    ax.axis("off")
+
+    def box(x, y, w, h, title, sub, fill):
+        ax.add_patch(FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0.02,rounding_size=0.12",
+                                    fc=fill, ec=GRID, lw=1))
+        ax.text(x + w / 2, y + h - 0.25, title, ha="center", va="top", fontsize=10.5, weight="bold", color=INK)
+        ax.text(x + w / 2, y + h - 0.58, sub, ha="center", va="top", fontsize=8.6, color=INK2, linespacing=1.35)
+
+    def arrow(x1, y1, x2, y2):
+        ax.annotate("", xy=(x2, y2), xytext=(x1, y1), arrowprops=dict(arrowstyle="-|>", color=INK2, lw=1.2))
+
+    LIGHT, BLUEBG = "#f1f0ec", "#e3edf9"
+    ax.text(0.1, 4.05, "Offline (once)", fontsize=9.5, color=INK2, style="italic")
+    box(0.1, 2.55, 2.0, 1.3, "8,000 LinkedIn JDs", "entry / associate / intern\nFIN · ACCT · IT · CNSL · ANLS", LIGHT)
+    box(2.6, 2.55, 2.3, 1.3, "Structured extraction", "LLM (fixed JSON schema, T=0,\ncached) or rule-based taxonomy", BLUEBG)
+    box(5.4, 2.55, 2.0, 1.3, "Embed", "requirements (+descriptor)\nand titles · MiniLM ONNX", BLUEBG)
+    box(7.9, 2.55, 2.0, 1.3, "Job index", "profiles + 110 req. vectors\n+ 8,000 title vectors", LIGHT)
+    arrow(2.1, 3.2, 2.6, 3.2); arrow(4.9, 3.2, 5.4, 3.2); arrow(7.4, 3.2, 7.9, 3.2)
+
+    ax.text(0.1, 2.15, "Per request", fontsize=9.5, color=INK2, style="italic")
+    box(0.1, 0.35, 2.0, 1.6, "Resume", "PDF / DOCX / TXT\n→ text → profile\n(skills, evidence,\nyears, degree)", LIGHT)
+    box(2.6, 0.35, 2.3, 1.6, "Requirement matching", "exact taxonomy hit = 1\nelse semantic: 0.85·ramp(cos)\ncertifications: exact only", BLUEBG)
+    box(5.4, 0.35, 2.0, 1.6, "Transparent score", "required · preferred ·\nexperience · education ·\nrole  → 0–100", BLUEBG)
+    box(7.9, 0.35, 2.0, 1.6, "Ranked list", "top-k + per-requirement\nevidence + explanation\n(LLM or template)", LIGHT)
+    arrow(2.1, 1.15, 2.6, 1.15); arrow(4.9, 1.15, 5.4, 1.15); arrow(7.4, 1.15, 7.9, 1.15)
+    arrow(8.9, 2.55, 6.4, 1.95)
+    fig.tight_layout()
+    fig.savefig(FIG / "architecture.png", dpi=200)
+
+
 if __name__ == "__main__":
     fig_funnel()
+    fig_architecture()
     for f in (fig_ranking, fig_paraphrase, fig_per_category):
         try:
             f()

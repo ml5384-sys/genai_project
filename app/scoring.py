@@ -199,33 +199,37 @@ class BatchScorer:
         self.req_emb = req_emb.astype(np.float32)
         self.title_emb = title_emb.astype(np.float32)
         tid = {t: i for i, t in enumerate(req_texts)}
-        u, sk, w, isreq, job, sem_ok = [], [], [], [], [], []
+        u, sk, soft, isreq, job, cat = [], [], [], [], [], []
         for j, p in enumerate(profiles):
             for r in p.requirements:
                 u.append(tid[embed_text(r.text, r.skill)])
                 sk.append(SKILL_IDS.get(r.skill, -1) if r.skill else -1)
-                w.append(req_weight(r.importance, r.skill))
+                soft.append(bool(r.skill) and group_of(r.skill) == "soft")
                 isreq.append(r.importance == "required")
                 job.append(j)
-                sem_ok.append(r.category not in settings.exact_only_categories)
+                cat.append(r.category)
         self.u, self.sk = np.array(u, dtype=np.int64), np.array(sk, dtype=np.int64)
-        self.w, self.isreq, self.job = np.array(w, np.float32), np.array(isreq, bool), np.array(job, np.int64)
-        self.sem_ok = np.array(sem_ok, bool)
+        self.soft, self.isreq, self.job = np.array(soft, bool), np.array(isreq, bool), np.array(job, np.int64)
+        self.cat = np.array(cat, dtype=object)
         self.n_reqs = np.array([len(p.requirements) for p in profiles])
         self.jd_years = np.array([np.nan if p.min_years_experience is None else p.min_years_experience for p in profiles])
         self.profiles = profiles
 
     def score_all(self, ctx: ResumeContext) -> tuple[np.ndarray, dict[str, np.ndarray]]:
+        # weights / exact-only flags are derived from settings at call time (so ablations take effect)
+        iw = settings.importance_weight
+        w = np.where(self.isreq, iw["required"], iw["preferred"]) * np.where(self.soft, settings.soft_skill_factor, 1.0)
+        sem_ok = ~np.isin(self.cat, list(settings.exact_only_categories))
         best_sim = (self.req_emb @ ctx.unit_emb.T).max(axis=1)          # (U,)
         sem = settings.semantic_max * ramp(best_sim, settings.sim_lo, settings.sim_hi)[self.u]
-        sem = np.where(self.sem_ok, sem, 0.0)
+        sem = np.where(sem_ok, sem, 0.0)
         exact = np.where(self.sk >= 0, ctx.skill_mask[np.maximum(self.sk, 0)], False)
         strength = np.where(exact, 1.0, sem).astype(np.float32)
         k, prior = settings.smoothing_k, settings.smoothing_prior
 
         def cov(mask):
-            num = np.bincount(self.job[mask], weights=(self.w * strength)[mask], minlength=self.n)
-            den = np.bincount(self.job[mask], weights=self.w[mask], minlength=self.n)
+            num = np.bincount(self.job[mask], weights=(w * strength)[mask], minlength=self.n)
+            den = np.bincount(self.job[mask], weights=w[mask], minlength=self.n)
             has = np.bincount(self.job[mask], minlength=self.n) > 0
             return np.where(has, (num + k * prior) / (den + k), np.nan)
 

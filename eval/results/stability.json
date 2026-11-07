@@ -1,0 +1,9 @@
+{
+  "n_resumes": 30,
+  "runs_per_resume": 3,
+  "identical_rankings_pct": 1.0,
+  "latency_ms_mean": 155.52896555553968,
+  "latency_ms_p50": 146.45368800029246,
+  "latency_ms_p95": 246.49496615006683,
+  "postings_per_request": 8000
+}
